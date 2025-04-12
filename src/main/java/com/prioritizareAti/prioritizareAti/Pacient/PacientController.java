@@ -41,12 +41,16 @@ public class PacientController {
     public Pacient updatePacient(@PathVariable Long id, @RequestBody PacientUpdateDTO updatedPacient){
         return pacientService.updatePacient(id, updatedPacient);
     }
-
     @PostMapping("/addWithUpdateDTO")
-    public Pacient addPacient(@RequestBody PacientUpdateDTO newPacient){
-        return pacientService.addPacientByUpdateDTO(newPacient);
+    public Pacient addPacientWithUpdateDTO(@RequestBody PacientUpdateDTO newPacientUpdateDTO){
+        return pacientService.addPacient(pacientService.makePacientWithUpdateDTO(newPacientUpdateDTO));
     }
 
-
+    @GetMapping("/tryFinalScore")
+    public int tempFinalScore(@RequestParam PacientUpdateDTO tempPacient){
+        Pacient p = pacientService.makePacientWithUpdateDTO(tempPacient);
+        p.calculeazaToateScorurile();
+        return p.getScorGeneralFinal();
+    }
 
 }

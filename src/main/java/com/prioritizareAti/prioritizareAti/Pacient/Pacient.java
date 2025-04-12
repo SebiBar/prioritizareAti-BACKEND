@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +26,10 @@ public class Pacient {
 
     // Identificare
     private String nume;
+
+/*    @Min(1)
+    @Max(30)
+    private int nrPat;*/
 
     // COMA
     private int gcs; // Glasgow Coma Scale (3–15)
@@ -58,7 +64,7 @@ public class Pacient {
     private int scorGeneralMinim;
     private int scorGeneralFinal;
 
-    public void calculeazaScorComa() {
+    private void calculeazaScorComa() {
         // Transforma GCS (3-15) într-un scor de 1-10
         int minGCS = 3;
         int maxGCS = 15;
@@ -66,7 +72,7 @@ public class Pacient {
         this.scorComa = (int) Math.round(1 + ((double)(gcs - minGCS) / (maxGCS - minGCS)) * 9);
     }
 
-    public void calculeazaScorCardiac() {
+    private void calculeazaScorCardiac() {
         if (instabilHemodinamic && areVasopresoare) {
             this.scorCardiac = 1;
         } else if (!areVasopresoare) {
@@ -76,7 +82,7 @@ public class Pacient {
         }
     }
 
-    public void calculeazaScorRespirator() {
+    private void calculeazaScorRespirator() {
         if (tipRespiratie.equals("ventilatie") && !oxigenStabil) {
             this.scorRespirator = 1;
         } else if (tipRespiratie.equals("spontana") && oxigenStabil) {
@@ -86,7 +92,7 @@ public class Pacient {
         }
     }
 
-    public void calculeazaScorInfectios() {
+    private void calculeazaScorInfectios() {
         if (esteContagios) {
             this.scorInfectios = 1;
         } else if (infectieControlata) {

@@ -120,11 +120,24 @@ public class PacientService {
         }).orElseThrow(() -> new RuntimeException("Pacient not found with id " + id));
     }
 
-    public Pacient addPacientByUpdateDTO(PacientUpdateDTO newPacient) {
+    public Pacient makePacientWithUpdateDTO(PacientUpdateDTO newPacient){
         Pacient p = new Pacient();
         p.UpdatePacient(newPacient);
+        return p;
+    }
+
+    public Pacient addPacient(Pacient p) {
         pacientRepository.save(p);
         logPacient(p);
         return p;
     }
+
+/*    public boolean checkForUniqueBed(int bedNr){
+        List<Pacient> pacients = pacientRepository.findAll();
+        for (Pacient pacient : pacients) {
+            if (pacient.getNrPat() == bedNr)
+                return false;
+        }
+        return true;
+    }*/
 }
