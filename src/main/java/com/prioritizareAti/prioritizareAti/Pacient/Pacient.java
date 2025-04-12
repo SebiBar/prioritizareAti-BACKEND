@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,8 @@ import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
+@Getter
 @Entity
 public class Pacient {
     @Getter
@@ -55,7 +58,7 @@ public class Pacient {
     private int scorGeneralMinim;
     private int scorGeneralFinal;
 
-    private void calculeazaScorComa() {
+    public void calculeazaScorComa() {
         // Transforma GCS (3-15) într-un scor de 1-10
         int minGCS = 3;
         int maxGCS = 15;
@@ -63,7 +66,7 @@ public class Pacient {
         this.scorComa = (int) Math.round(1 + ((double)(gcs - minGCS) / (maxGCS - minGCS)) * 9);
     }
 
-    private void calculeazaScorCardiac() {
+    public void calculeazaScorCardiac() {
         if (instabilHemodinamic && areVasopresoare) {
             this.scorCardiac = 1;
         } else if (!areVasopresoare) {
@@ -73,7 +76,7 @@ public class Pacient {
         }
     }
 
-    private void calculeazaScorRespirator() {
+    public void calculeazaScorRespirator() {
         if (tipRespiratie.equals("ventilatie") && !oxigenStabil) {
             this.scorRespirator = 1;
         } else if (tipRespiratie.equals("spontana") && oxigenStabil) {
@@ -83,7 +86,7 @@ public class Pacient {
         }
     }
 
-    private void calculeazaScorInfectios() {
+    public void calculeazaScorInfectios() {
         if (esteContagios) {
             this.scorInfectios = 1;
         } else if (infectieControlata) {
@@ -105,24 +108,30 @@ public class Pacient {
     }
 
     private void calculeazaScorFinal() {
-        int media = (scorComa + scorCardiac + scorRespirator + scorInfectios) / 4;
-        int minim = Math.min(
-                Math.min(scorComa, scorCardiac),
-                Math.min(scorRespirator, scorInfectios)
-        );
+        calculeazaScorMedian();
+        calculeazaScorMinim();
 
         // Determină limita maximă a tier-ului minimului
         int limita;
-        if (minim <= 3) {
+        if (scorGeneralMinim <= 3) {
             limita = 3;
-        } else if (minim <= 6) {
+        } else if (scorGeneralMinim <= 6) {
             limita = 6;
         } else {
             limita = 10;
         }
 
-        // Scorul final este media, dar limitată la tier-ul minimului
-        this.scorGeneralFinal = Math.min(media, limita);
+        // Scorul final este media, dar limitata la tier-ul minimului
+        this.scorGeneralFinal = Math.min(scorGeneralMedian, limita);
+    }
+
+    public void calculeazaToateScorurile(){
+        calculeazaScorCardiac();
+        calculeazaScorComa();
+        calculeazaScorRespirator();
+        calculeazaScorInfectios();
+
+        calculeazaScorFinal();
     }
 
     public Pacient(String nume, int gcs, int tensiune,
@@ -146,15 +155,40 @@ public class Pacient {
         this.apacheII = apacheII;
         this.lactat = lactat;
 
-        calculeazaScorComa();
-        calculeazaScorCardiac();
-        calculeazaScorRespirator();
-        calculeazaScorInfectios();
-
-        calculeazaScorMinim();
-        calculeazaScorMedian();
-        calculeazaScorFinal();
+        calculeazaToateScorurile();
     }
+
+    public void UpdatePacient(PacientUpdateDTO updatedPacient){
+        setNume(updatedPacient.getNume());
+
+        // COMA
+        setGcs(updatedPacient.getGcs());
+
+        // Cardiac
+        setTensiune(updatedPacient.getTensiune());
+        setFrecventaCardiaca(updatedPacient.getFrecventaCardiaca());
+        setAreVasopresoare(updatedPacient.isAreVasopresoare());
+        setInstabilHemodinamic(updatedPacient.isInstabilHemodinamic());
+
+        // Respirator
+        setTipRespiratie(updatedPacient.getTipRespiratie());
+        setSpo2(updatedPacient.getSpo2());
+        setOxigenStabil(updatedPacient.isOxigenStabil());
+
+        // Infectios
+        setAreInfectie(updatedPacient.isAreInfectie());
+        setEsteContagios(updatedPacient.isEsteContagios());
+        setInfectieControlata(updatedPacient.isInfectieControlata());
+
+        // Scoruri suplimentare
+        setSofa(updatedPacient.getSofa());
+        setApacheII(updatedPacient.getApacheII());
+        setLactat(updatedPacient.getLactat());
+
+        calculeazaToateScorurile();
+    }
+
+
 
 }
 

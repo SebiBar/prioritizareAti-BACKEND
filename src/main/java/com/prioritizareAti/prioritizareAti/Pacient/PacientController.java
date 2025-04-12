@@ -1,26 +1,52 @@
 package com.prioritizareAti.prioritizareAti.Pacient;
 
 
-import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/pacients")
 public class PacientController {
 
+    final PacientService pacientService;
+
     @Autowired
-    private PacientRepository pacientRepository;
+    public PacientController(PacientService pacientService) {
+        this.pacientService = pacientService;
+    }
 
-    @Operation(summary = "Generare de pacient aleator", description = "Genereaza un pacient inexistent")
-    @GetMapping("/generate")
+    @GetMapping("/getPacients")
+    public List<PacientSimpleDTO> getPacients() {
+        return pacientService.getSimpleDTOList();
+    }
+
+    @GetMapping("/getPacientDetails/{id}")
+    public PacientDetailsDTO getPacientDetails(@PathVariable Long id){
+        return pacientService.getPacientDetails(id);
+    }
+
+    @PostMapping("/generate")
     public Pacient generarePacient() {
-        return pacientRepository.save(GeneratorPacient.genereazaPacientRandom());
+        return pacientService.generatePacient();
     }
 
-    @PostMapping("/create")
-    public Pacient create(@RequestBody Pacient pacient) {
-        return pacientRepository.save(pacient);
+    @DeleteMapping("/deletePacient/{id}")
+    public void deletePacient(@PathVariable Long id){
+        pacientService.deletePacientById(id);
     }
+
+    @PutMapping("/update/{id}")
+    public Pacient updatePacient(@PathVariable Long id, @RequestBody PacientUpdateDTO updatedPacient){
+        return pacientService.updatePacient(id, updatedPacient);
+    }
+
+    @PostMapping("/addWithUpdateDTO")
+    public Pacient addPacient(@RequestBody PacientUpdateDTO newPacient){
+        return pacientService.addPacientByUpdateDTO(newPacient);
+    }
+
+
 
 }
